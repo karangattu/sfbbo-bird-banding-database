@@ -42,7 +42,7 @@ export class ServiceAccountDriveService {
 
     this.drive = google.drive({
       version: 'v3',
-      auth: this.auth,
+      auth: this.auth as any,
     });
   }
 

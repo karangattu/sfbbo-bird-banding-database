@@ -160,23 +160,35 @@ export default function Home() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">📁 Google Drive Photos</h2>
           
           {loadError ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-              <p className="font-semibold mb-2">⚠️ Configuration Issue</p>
-              <p className="text-sm mb-3">{loadError}</p>
-              <details className="text-sm">
-                <summary className="cursor-pointer font-medium">How to fix:</summary>
-                <ol className="list-decimal list-inside mt-2 space-y-1 text-red-700">
-                  <li>Edit your <code className="bg-red-100 px-1 rounded">.env.local</code> file</li>
-                  <li>Add: <code className="bg-red-100 px-1 rounded">NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID=your_folder_id</code></li>
-                  <li>Restart the development server</li>
-                  <li>Reload this page</li>
-                </ol>
-              </details>
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg p-6">
+              <div className="flex items-start gap-4">
+                <div className="text-3xl">🚨</div>
+                <div className="flex-1">
+                  <p className="font-semibold text-amber-900 mb-2">Configuration Needed</p>
+                  <p className="text-amber-800 text-sm mb-4">
+                    {loadError.includes('not configured') 
+                      ? 'Your app needs to be configured to connect to Google Drive.'
+                      : 'We encountered an issue connecting to your Google Drive.'}
+                  </p>
+                  <div className="bg-white bg-opacity-50 rounded p-3 text-sm text-amber-900">
+                    <p className="font-medium mb-2">📋 Quick Setup:</p>
+                    <ol className="space-y-1 ml-4 list-decimal text-amber-800">
+                      <li>Set your Google Drive folder ID in the environment</li>
+                      <li>Ensure your service account credentials are configured</li>
+                      <li>Restart the app</li>
+                    </ol>
+                  </div>
+                  <p className="text-xs text-amber-700 mt-3">See deployment documentation for detailed setup steps.</p>
+                </div>
+              </div>
             </div>
           ) : isLoadingPhotos ? (
-            <div className="flex items-center gap-2">
-              <div className="animate-spin">⟳</div>
-              <p className="text-gray-600">Loading photos from Google Drive...</p>
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="mb-4">
+                <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+              </div>
+              <p className="text-gray-600 font-medium">Loading your photos...</p>
+              <p className="text-gray-500 text-sm mt-1">Connecting to Google Drive</p>
             </div>
           ) : (
             <div className="space-y-2">
