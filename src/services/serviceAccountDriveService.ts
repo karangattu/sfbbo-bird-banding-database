@@ -182,25 +182,46 @@ export class ServiceAccountDriveService {
   }
 
   /**
-   * List all photos in a folder with their metadata
+   * List all photos in a folder and nested subfolders with their metadata
    * @param folderId - Google Drive folder ID
    */
   async listPhotosWithMetadata(folderId: string): Promise<any[]> {
     try {
-      const response = await this.drive.files.list({
-        q: `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`,
-        spaces: 'drive',
-        fields: 'files(id, name, description, properties, webViewLink, thumbnailLink, createdTime, modifiedTime)',
-        pageSize: 100,
-      });
+      const allPhotos: any[] = [];
 
-      return (response.data.files || []).map((file: any) => ({
-        ...file,
-        imageUrl: `/api/photos/thumbnail/${file.id}`,
-        metadata: file.description ? JSON.parse(file.description) : {},
-      }));
+      // Recursive function to search folder and subfolders
+      const searchFolderRecursive = async (currentFolderId: string) => {
+        // Get photos in current folder
+        const response = await this.drive.files.list({
+          q: `'${currentFolderId}' in parents and trashed = false`,
+          spaces: 'drive',
+          fields: 'files(id, name, mimeType, description, properties, webViewLink, thumbnailLink, createdTime, modifiedTime)',
+          pageSize: 100,
+        });
+
+        if (response.data.files) {
+          for (const file of response.data.files) {
+            // Check if it's an image
+            if (file.mimeType && file.mimeType.includes('image/')) {
+              allPhotos.push({
+                ...file,
+                imageUrl: `/api/photos/thumbnail/${file.id}`,
+                metadata: file.description ? JSON.parse(file.description) : {},
+              });
+            }
+            // Recursively search subfolders
+            else if (file.mimeType === 'application/vnd.google-apps.folder') {
+              await searchFolderRecursive(file.id);
+            }
+          }
+        }
+      };
+
+      // Start recursive search
+      await searchFolderRecursive(folderId);
+      return allPhotos;
     } catch (error) {
-      console.error('Error listing photos:', error);
+      console.error('Error listing photos with metadata:', error);
       throw error;
     }
   }

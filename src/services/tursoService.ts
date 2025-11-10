@@ -344,6 +344,21 @@ export class TursoService {
       return [];
     }
   }
+
+  /**
+   * Delete all tags for a photo
+   */
+  async deletePhotoTags(photoId: string): Promise<void> {
+    try {
+      console.log('Deleting all tags for photoId:', photoId);
+      const query = `DELETE FROM photo_tags WHERE photoId = ?`;
+      await this.executeQuery(query, [photoId]);
+      console.log('Successfully deleted all tags for photoId:', photoId);
+    } catch (error) {
+      console.error('Error deleting photo tags:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

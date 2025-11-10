@@ -59,28 +59,28 @@ export const usePhotoStore = create<PhotoStore>((set, get) => ({
   
   setFilters: (filters) => set({ filters }),
   
-  clearFilters: () => set({ filters: {} }, true),
+  clearFilters: () => set({ filters: {} }),
   
   applyFilters: () => set((state) => {
     const { photos, filters } = state;
     
-    if (Object.keys(filters).length === 0) {
+    if (!filters || Object.keys(filters).length === 0) {
       return { filteredPhotos: photos };
     }
     
     const filtered = photos.filter((photo) => {
-      if (photo.tags.length === 0) return false;
+      if (!photo.tags || photo.tags.length === 0) return false;
       
       return photo.tags.some((tag) => {
         return (
-          (!filters.recordId || tag.recordId.toLowerCase().includes(filters.recordId.toLowerCase())) &&
-          (!filters.bandNumber || tag.bandNumber.toLowerCase().includes(filters.bandNumber.toLowerCase())) &&
+          (!filters.recordId || (tag.recordId && tag.recordId.toLowerCase().includes(filters.recordId.toLowerCase()))) &&
+          (!filters.bandNumber || (tag.bandNumber && tag.bandNumber.toLowerCase().includes(filters.bandNumber.toLowerCase()))) &&
           (!filters.date || tag.date === filters.date) &&
-          (!filters.location || tag.location.toLowerCase().includes(filters.location.toLowerCase())) &&
-          (!filters.species || tag.species.toLowerCase().includes(filters.species.toLowerCase())) &&
+          (!filters.location || (tag.location && tag.location.toLowerCase().includes(filters.location.toLowerCase()))) &&
+          (!filters.species || (tag.species && tag.species.toLowerCase().includes(filters.species.toLowerCase()))) &&
           (!filters.age || tag.age === filters.age) &&
           (!filters.sex || tag.sex === filters.sex) &&
-          (!filters.notes || tag.notes?.toLowerCase().includes(filters.notes.toLowerCase()))
+          (!filters.notes || (tag.notes && tag.notes.toLowerCase().includes(filters.notes.toLowerCase())))
         );
       });
     });

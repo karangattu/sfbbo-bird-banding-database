@@ -16,8 +16,8 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onSelect, isSelecte
   return (
     <div
       onClick={onSelect}
-      className={`cursor-pointer rounded-lg overflow-hidden shadow-md transition-transform hover:scale-105 ${
-        isSelected ? 'ring-4 ring-blue-500' : 'ring-2 ring-gray-200'
+      className={`cursor-pointer rounded-lg overflow-hidden shadow-md transition-all hover:shadow-lg hover:scale-105 ${
+        isSelected ? 'ring-3 ring-blue-500' : 'ring-1 ring-gray-200 hover:ring-gray-300'
       }`}
     >
       <div className="relative aspect-square bg-gray-200">
@@ -29,28 +29,30 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onSelect, isSelecte
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-300">
-            <span className="text-gray-600">No image</span>
+            <span className="text-xs text-gray-600">No image</span>
+          </div>
+        )}
+        
+        {/* Tag badge indicator */}
+        {hasTag && (
+          <div className="absolute top-1 right-1 bg-green-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+            {photo.tags.length}
           </div>
         )}
       </div>
-      <div className="p-3 bg-white">
-        <h3 className="text-sm font-semibold text-gray-800 truncate">{photo.name}</h3>
-        <div className="mt-2">
-          {hasTag ? (
-            <div className="space-y-1">
-              {photo.tags.map((tag) => (
-                <div key={tag.id} className="text-xs text-gray-600">
-                  <p className="font-medium">{tag.species}</p>
-                  <p className="text-gray-500">
-                    {tag.age} {tag.sex}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-gray-400 italic">No tags</p>
-          )}
-        </div>
+      
+      {/* Compact info card */}
+      <div className="p-2 bg-white border-t border-gray-100">
+        <h3 className="text-xs font-semibold text-gray-700 truncate">{photo.name}</h3>
+        {hasTag ? (
+          <div className="mt-1">
+            <p className="text-xs text-gray-600 font-medium truncate">
+              {photo.tags[0]?.species || 'Tagged'}
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400 italic">Not tagged</p>
+        )}
       </div>
     </div>
   );

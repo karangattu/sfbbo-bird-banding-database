@@ -8,6 +8,7 @@ interface PhotoDetailProps {
   onAddTag: () => void;
   onEditTag: (tagId: string) => void;
   onDeleteTag: (tagId: string) => void;
+  onDeletePhoto?: () => void;
 }
 
 export const PhotoDetail: React.FC<PhotoDetailProps> = ({
@@ -15,6 +16,7 @@ export const PhotoDetail: React.FC<PhotoDetailProps> = ({
   onAddTag,
   onEditTag,
   onDeleteTag,
+  onDeletePhoto,
 }) => {
   if (!photo) {
     return (
@@ -41,15 +43,28 @@ export const PhotoDetail: React.FC<PhotoDetailProps> = ({
 
       {/* Photo Info & Tags */}
       <div className="flex-1 overflow-y-auto p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{photo.name}</h2>
-        <a
-          href={photo.webViewLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 text-sm mb-6 inline-block"
-        >
-          Open in Google Drive →
-        </a>
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{photo.name}</h2>
+            <a
+              href={photo.webViewLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 text-sm inline-block"
+            >
+              Open in Google Drive →
+            </a>
+          </div>
+          {onDeletePhoto && (
+            <button
+              onClick={onDeletePhoto}
+              className="ml-2 px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition flex items-center gap-1"
+              title="Delete this photo and all associated tags from Google Drive"
+            >
+              🗑️ Delete Photo
+            </button>
+          )}
+        </div>
 
         {/* Tags Section */}
         <div className="mt-6">

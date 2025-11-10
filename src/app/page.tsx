@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PhotoCard } from '@/components/PhotoCard';
 import { PhotoDetail } from '@/components/PhotoDetail';
 import { SearchFilter } from '@/components/SearchFilter';
@@ -31,6 +31,32 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
 
   const googleDriveFolderId = process.env.NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID;
+
+  const { totalTags, taggedPhotosCount, uniqueSpeciesCount } = useMemo(() => {
+    let tagTotal = 0;
+    let taggedPhotoTotal = 0;
+    const speciesSet = new Set<string>();
+
+    photos.forEach((photo) => {
+      const tagCount = photo.tags?.length ?? 0;
+      tagTotal += tagCount;
+      if (tagCount > 0) {
+        taggedPhotoTotal += 1;
+      }
+      photo.tags?.forEach((tag) => {
+        const species = tag.species?.trim();
+        if (species) {
+          speciesSet.add(species.toLowerCase());
+        }
+      });
+    });
+
+    return {
+      totalTags: tagTotal,
+      taggedPhotosCount: taggedPhotoTotal,
+      uniqueSpeciesCount: speciesSet.size,
+    };
+  }, [photos]);
 
   // Fix hydration mismatch
   useEffect(() => {
@@ -130,6 +156,36 @@ export default function Home() {
     }
   };
 
+  const handleDeletePhoto = async () => {
+    if (!selectedPhoto) return;
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${selectedPhoto.name}" from Google Drive? This action cannot be undone and will also delete all associated tags.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch('/api/photos/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoId: selectedPhoto.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete photo');
+      }
+
+      alert('Photo deleted successfully!');
+      selectPhoto(null);
+      handleRefreshPhotos();
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+      alert(`Failed to delete photo: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   const displayPhotos = Object.keys(filters).some((key) => filters[key as keyof FilterCriteria])
     ? filteredPhotos
     : photos;
@@ -191,32 +247,59 @@ export default function Home() {
               <p className="text-gray-500 text-sm mt-1">Connecting to Google Drive</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-gray-600">
-                  <span className="font-semibold text-green-600">✓</span> Connected and loaded {photos.length} photo{photos.length !== 1 ? 's' : ''}
-                </p>
-                <div className="flex gap-2">
+            <div className="space-y-5">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <p className="flex items-center gap-2 text-sm font-semibold text-green-700">
+                    <span className="text-lg">🟢</span>
+                    Connected to Google Drive
+                  </p>
+                  <p className="text-gray-600 text-sm md:text-base">
+                    Loaded {photos.length} photo{photos.length !== 1 ? 's' : ''}.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={handleRefreshPhotos}
-                    className="px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition"
+                    className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    🔄 Refresh
+                    🔄 Refresh Gallery
                   </button>
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="rounded-lg border border-green-100 bg-green-50 p-4">
+                  <p className="text-xs font-semibold text-green-600 uppercase tracking-wide">Photos Synced</p>
+                  <p className="text-2xl font-bold text-green-900 mt-1">{photos.length}</p>
+                  <p className="text-xs text-green-700 mt-2">Total photos currently available</p>
+                </div>
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                  <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Tagged Photos</p>
+                  <p className="text-2xl font-bold text-blue-900 mt-1">{taggedPhotosCount}</p>
+                  <p className="text-xs text-blue-700 mt-2">Photo{taggedPhotosCount === 1 ? '' : 's'} with saved metadata</p>
+                </div>
+                <div className="rounded-lg border border-amber-100 bg-amber-50 p-4">
+                  <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">Species Catalogued</p>
+                  <p className="text-2xl font-bold text-amber-900 mt-1">{uniqueSpeciesCount}</p>
+                  <p className="text-xs text-amber-700 mt-2">{totalTags} total tag{totalTags === 1 ? '' : 's'} saved</p>
+                </div>
+              </div>
+
               {googleDriveFolderId && (
-                <div className="flex gap-2 flex-wrap mt-2">
-                  <PhotoUpload
-                    folderId={googleDriveFolderId}
-                    onUploadSuccess={() => {
-                      alert('Photo uploaded successfully!');
-                      handleRefreshPhotos();
-                    }}
-                    onUploadError={(error) => {
-                      alert(`Upload failed: ${error}`);
-                    }}
-                  />
+                <div>
+                  <div className="flex gap-2 flex-wrap">
+                    <PhotoUpload
+                      folderId={googleDriveFolderId}
+                      onUploadSuccess={() => {
+                        alert('Photo uploaded successfully!');
+                        handleRefreshPhotos();
+                      }}
+                      onUploadError={(error) => {
+                        alert(`Upload failed: ${error}`);
+                      }}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -234,58 +317,186 @@ export default function Home() {
 
         {/* Main Content Area */}
         {photos.length === 0 && !loadError ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-600 text-lg mb-4">
-              No photos loaded yet. Photos will appear here automatically once configured.
-            </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800 inline-block">
-              <p className="font-semibold mb-2">Setup Instructions:</p>
-              <ol className="text-left space-y-1 list-decimal list-inside">
-                <li>Edit your <code className="bg-blue-100 px-1 rounded text-xs">.env.local</code> file</li>
-                <li>Add your Google Drive folder ID: <code className="bg-blue-100 px-1 rounded text-xs">NEXT_PUBLIC_GOOGLE_DRIVE_FOLDER_ID=your_id</code></li>
-                <li>Restart the development server</li>
-                <li>Reload this page</li>
-              </ol>
+          <div className="bg-gradient-to-br from-sky-50 to-indigo-50 border border-blue-100 rounded-2xl p-12 text-center flex flex-col items-center gap-6">
+            <div className="text-5xl">🪶</div>
+            <div className="space-y-2 max-w-xl">
+              <h3 className="text-2xl font-semibold text-gray-900">Your gallery is ready for its first photo</h3>
+              <p className="text-gray-600">
+                Upload a photo from your bird banding session to start tagging and building your searchable archive.
+              </p>
             </div>
+
+            {googleDriveFolderId ? (
+              <div className="flex flex-col items-center gap-2">
+                <PhotoUpload
+                  folderId={googleDriveFolderId}
+                  onUploadSuccess={() => {
+                    alert('Photo uploaded successfully!');
+                    handleRefreshPhotos();
+                  }}
+                  onUploadError={(error) => {
+                    alert(`Upload failed: ${error}`);
+                  }}
+                />
+                <p className="text-xs text-gray-500">Uploads are saved to Google Drive and tagged instantly.</p>
+              </div>
+            ) : (
+              <div className="bg-white border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                <p className="font-semibold mb-2">Quick setup checklist</p>
+                <ol className="text-left space-y-1 list-decimal list-inside">
+                  <li>Set your Google Drive folder ID in <code className="bg-blue-100 px-1 rounded text-xs">.env.local</code></li>
+                  <li>Restart the app</li>
+                  <li>Refresh this page</li>
+                </ol>
+              </div>
+            )}
+
+            <p className="text-xs text-gray-500">Need help? Check the deployment guide for step-by-step configuration.</p>
           </div>
         ) : photos.length === 0 && loadError ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
             <p className="text-gray-600 text-lg">See the configuration section above for setup instructions.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Photo Gallery */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow p-4">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  Photos ({displayPhotos.length})
-                </h2>
-                <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-                  {displayPhotos.map((photo) => (
-                    <PhotoCard
-                      key={photo.id}
-                      photo={photo}
-                      onSelect={() => selectPhoto(photo)}
-                      isSelected={selectedPhoto?.id === photo.id}
-                    />
-                  ))}
+          <div className="flex flex-col gap-6">
+            {/* Photo Details and Preview - Top section */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+                {/* Photo Preview and Info */}
+                <div className="flex flex-col">
+                  <div className="flex-shrink-0 bg-gray-900 rounded-lg flex items-center justify-center mb-4" style={{ height: '350px' }}>
+                    {selectedPhoto?.imageUrl ? (
+                      <img
+                        src={selectedPhoto.imageUrl}
+                        alt={selectedPhoto.name}
+                        className="max-w-full max-h-full object-contain rounded-lg"
+                      />
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-gray-400 text-lg">Select a photo to preview</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {selectedPhoto && (
+                    <div className="bg-gray-50 p-4 rounded">
+                      <h3 className="font-semibold text-gray-900 truncate mb-2">{selectedPhoto.name}</h3>
+                      <a
+                        href={selectedPhoto.webViewLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        View in Google Drive →
+                      </a>
+                    </div>
+                  )}
                 </div>
-                {displayPhotos.length === 0 && (
-                  <p className="text-gray-500 text-center py-8">No photos match your filters</p>
-                )}
+
+                {/* Quick Tags Summary */}
+                <div className="flex flex-col">
+                  {selectedPhoto ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-900">Tags ({selectedPhoto.tags?.length || 0})</h3>
+                        <button
+                          onClick={handleAddTag}
+                          className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition"
+                        >
+                          + Add Tag
+                        </button>
+                      </div>
+
+                      {selectedPhoto.tags && selectedPhoto.tags.length > 0 ? (
+                        <div className="space-y-3 max-h-80 overflow-y-auto">
+                          {selectedPhoto.tags.map((tag) => (
+                            <div key={tag.id} className="border border-gray-200 rounded-lg p-3 bg-white text-sm">
+                              <div className="grid grid-cols-2 gap-2 mb-2">
+                                <div>
+                                  <p className="text-xs text-gray-500 font-semibold">Species</p>
+                                  <p className="font-medium">{tag.species}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 font-semibold">Band #</p>
+                                  <p className="font-medium">{tag.bandNumber}</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-2">
+                                <div>{tag.age} / {tag.sex}</div>
+                                <div>{tag.date}</div>
+                              </div>
+                              {tag.location && <p className="text-xs text-gray-600 mb-2">📍 {tag.location}</p>}
+                              
+                              <div className="flex gap-2 mt-3">
+                                <button
+                                  onClick={() => handleEditTag(tag.id)}
+                                  className="flex-1 text-xs px-2 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteTag(tag.id)}
+                                  className="flex-1 text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-400 text-sm text-center py-4">No tags yet</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      <p className="text-center">Select a photo to view and edit its tags</p>
+                    </div>
+                  )}
+
+                  {selectedPhoto && (
+                    <button
+                      onClick={handleDeletePhoto}
+                      className="mt-4 w-full px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition flex items-center justify-center gap-1"
+                      title="Delete this photo and all associated tags from Google Drive"
+                    >
+                      🗑️ Delete Photo
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Photo Details and Tags */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow overflow-hidden" style={{ height: '600px' }}>
-                <PhotoDetail
-                  photo={selectedPhoto}
-                  onAddTag={handleAddTag}
-                  onEditTag={handleEditTag}
-                  onDeleteTag={handleDeleteTag}
-                />
+            {/* Photo Gallery - Bottom section */}
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Gallery
+                </h2>
+                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  {displayPhotos.length} photo{displayPhotos.length !== 1 ? 's' : ''}
+                </span>
               </div>
+              
+              {displayPhotos.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <p className="text-gray-500 text-center">No photos match your filters</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <div className="flex gap-3 pb-2">
+                    {displayPhotos.map((photo) => (
+                      <div key={photo.id} className="flex-shrink-0" style={{ width: '120px' }}>
+                        <PhotoCard
+                          photo={photo}
+                          onSelect={() => selectPhoto(photo)}
+                          isSelected={selectedPhoto?.id === photo.id}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
