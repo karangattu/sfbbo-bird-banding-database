@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { PhotoTag } from '@/types';
-import { usePhotoStore } from '@/store/photoStore';
+import React, { useState } from "react";
+import { PhotoTag } from "@/types";
+import { usePhotoStore } from "@/store/photoStore";
 
 interface TagFormProps {
   photoId: string;
@@ -10,24 +10,30 @@ interface TagFormProps {
   existingTag?: PhotoTag;
 }
 
-export const TagForm: React.FC<TagFormProps> = ({ photoId, onClose, existingTag }) => {
+export const TagForm: React.FC<TagFormProps> = ({
+  photoId,
+  onClose,
+  existingTag,
+}) => {
   const { addTag, updateTag } = usePhotoStore();
   const [formData, setFormData] = useState({
-    recordId: existingTag?.recordId || '',
-    bandNumber: existingTag?.bandNumber || '',
-    date: existingTag?.date || '',
-    location: existingTag?.location || '',
-    species: existingTag?.species || '',
-    age: existingTag?.age || '',
-    sex: existingTag?.sex || '',
-    firstPhotoNumber: existingTag?.firstPhotoNumber || '',
-    lastPhotoNumber: existingTag?.lastPhotoNumber || '',
-    wrpPlumageCode: existingTag?.wrpPlumageCode || '',
-    notes: existingTag?.notes || '',
+    recordId: existingTag?.recordId || "",
+    bandNumber: existingTag?.bandNumber || "",
+    date: existingTag?.date || "",
+    location: existingTag?.location || "CCFS",
+    species: existingTag?.species || "",
+    age: existingTag?.age || "",
+    sex: existingTag?.sex || "",
+    firstPhotoNumber: existingTag?.firstPhotoNumber || "",
+    lastPhotoNumber: existingTag?.lastPhotoNumber || "",
+    wrpPlumageCode: existingTag?.wrpPlumageCode || "",
+    notes: existingTag?.notes || "",
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -37,7 +43,7 @@ export const TagForm: React.FC<TagFormProps> = ({ photoId, onClose, existingTag 
     e.preventDefault();
 
     if (!formData.recordId || !formData.bandNumber || !formData.species) {
-      alert('Please fill in Record ID, Band Number, and Species');
+      alert("Please fill in Record ID, Band Number, and Species");
       return;
     }
 
@@ -65,7 +71,7 @@ export const TagForm: React.FC<TagFormProps> = ({ photoId, onClose, existingTag 
     } else {
       const tag: PhotoTag = {
         ...tagData,
-        id: '',
+        id: "",
         createdAt: new Date().toISOString(),
       };
       await addTag(photoId, tag);
@@ -79,7 +85,7 @@ export const TagForm: React.FC<TagFormProps> = ({ photoId, onClose, existingTag 
       <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-screen overflow-y-auto">
         <div className="sticky top-0 bg-gray-100 border-b p-4 flex justify-between items-center">
           <h2 className="text-xl font-bold">
-            {existingTag ? 'Edit Tag' : 'Add Tag'}
+            {existingTag ? "Edit Tag" : "Add Tag"}
           </h2>
           <button
             onClick={onClose}
@@ -92,7 +98,9 @@ export const TagForm: React.FC<TagFormProps> = ({ photoId, onClose, existingTag 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Required Fields */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Required Fields</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+              Required Fields
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -204,7 +212,9 @@ export const TagForm: React.FC<TagFormProps> = ({ photoId, onClose, existingTag 
 
           {/* Optional Fields */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Optional Fields</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+              Optional Fields
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -272,7 +282,7 @@ export const TagForm: React.FC<TagFormProps> = ({ photoId, onClose, existingTag 
               type="submit"
               className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition"
             >
-              {existingTag ? 'Update Tag' : 'Add Tag'}
+              {existingTag ? "Update Tag" : "Add Tag"}
             </button>
           </div>
         </form>

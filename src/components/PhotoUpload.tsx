@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { PhotoMetadata } from '@/services/serviceAccountDriveService';
+import { useState } from "react";
+import { PhotoMetadata } from "@/services/serviceAccountDriveService";
 
 interface PhotoUploadProps {
   folderId: string;
@@ -17,18 +17,18 @@ export default function PhotoUpload({
   const [isOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   // Metadata form state
   const [metadata, setMetadata] = useState<PhotoMetadata>({
-    recordId: '',
-    bandNumber: '',
-    date: new Date().toISOString().split('T')[0],
-    location: '',
-    species: '',
-    age: '',
-    sex: '',
-    notes: '',
+    recordId: "",
+    bandNumber: "",
+    date: new Date().toISOString().split("T")[0],
+    location: "",
+    species: "",
+    age: "",
+    sex: "",
+    notes: "",
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,19 +56,19 @@ export default function PhotoUpload({
     e.preventDefault();
 
     if (!file) {
-      onUploadError?.('Please select a file');
+      onUploadError?.("Please select a file");
       return;
     }
 
     // Validate required fields
     const requiredFields: (keyof PhotoMetadata)[] = [
-      'recordId',
-      'bandNumber',
-      'date',
-      'location',
-      'species',
-      'age',
-      'sex',
+      "recordId",
+      "bandNumber",
+      "date",
+      "location",
+      "species",
+      "age",
+      "sex",
     ];
 
     for (const field of requiredFields) {
@@ -82,42 +82,43 @@ export default function PhotoUpload({
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folderId', folderId);
-      formData.append('metadata', JSON.stringify(metadata));
+      formData.append("file", file);
+      formData.append("folderId", folderId);
+      formData.append("metadata", JSON.stringify(metadata));
 
-      const response = await fetch('/api/photos/upload', {
-        method: 'POST',
+      const response = await fetch("/api/photos/upload", {
+        method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        throw new Error(errorData.error || "Upload failed");
       }
 
       const result = await response.json();
 
       // Reset form
       setFile(null);
-      setPreviewUrl('');
+      setPreviewUrl("");
       setMetadata({
-        recordId: '',
-        bandNumber: '',
-        date: new Date().toISOString().split('T')[0],
-        location: '',
-        species: '',
-        age: '',
-        sex: '',
-        notes: '',
+        recordId: "",
+        bandNumber: "",
+        date: new Date().toISOString().split("T")[0],
+        location: "",
+        species: "",
+        age: "",
+        sex: "",
+        notes: "",
       });
       setIsOpen(false);
 
       onUploadSuccess?.(result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      const errorMessage =
+        error instanceof Error ? error.message : "Upload failed";
       onUploadError?.(errorMessage);
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -165,14 +166,20 @@ export default function PhotoUpload({
                       file:bg-blue-50 file:text-blue-700
                       hover:file:bg-blue-100"
                   />
-                  {file && <p className="mt-2 text-sm text-green-600 font-medium">{file.name}</p>}
+                  {file && (
+                    <p className="mt-2 text-sm text-green-600 font-medium">
+                      {file.name}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Image Preview */}
               {previewUrl && (
                 <div className="border rounded-lg p-4">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">Preview</p>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">
+                    Preview
+                  </p>
                   <img
                     src={previewUrl}
                     alt="Preview"
@@ -184,7 +191,8 @@ export default function PhotoUpload({
               {/* Required Metadata Section */}
               <div className="border-l-4 border-red-400 pl-4">
                 <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                  <span className="text-red-600 mr-2">*</span> Required Information
+                  <span className="text-red-600 mr-2">*</span> Required
+                  Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -194,7 +202,9 @@ export default function PhotoUpload({
                     <input
                       type="text"
                       value={metadata.recordId}
-                      onChange={(e) => handleMetadataChange('recordId', e.target.value)}
+                      onChange={(e) =>
+                        handleMetadataChange("recordId", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., CCFS-2025-001"
@@ -208,7 +218,9 @@ export default function PhotoUpload({
                     <input
                       type="text"
                       value={metadata.bandNumber}
-                      onChange={(e) => handleMetadataChange('bandNumber', e.target.value)}
+                      onChange={(e) =>
+                        handleMetadataChange("bandNumber", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 1234567"
@@ -222,7 +234,9 @@ export default function PhotoUpload({
                     <input
                       type="date"
                       value={metadata.date}
-                      onChange={(e) => handleMetadataChange('date', e.target.value)}
+                      onChange={(e) =>
+                        handleMetadataChange("date", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -235,7 +249,9 @@ export default function PhotoUpload({
                     <input
                       type="text"
                       value={metadata.location}
-                      onChange={(e) => handleMetadataChange('location', e.target.value)}
+                      onChange={(e) =>
+                        handleMetadataChange("location", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Coyote Creek Field Station"
@@ -249,7 +265,9 @@ export default function PhotoUpload({
                     <input
                       type="text"
                       value={metadata.species}
-                      onChange={(e) => handleMetadataChange('species', e.target.value)}
+                      onChange={(e) =>
+                        handleMetadataChange("species", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Wilson's Warbler"
@@ -262,14 +280,18 @@ export default function PhotoUpload({
                     </label>
                     <select
                       value={metadata.age}
-                      onChange={(e) => handleMetadataChange('age', e.target.value)}
+                      onChange={(e) =>
+                        handleMetadataChange("age", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Select Age</option>
                       <option value="hatching year">Hatching Year</option>
                       <option value="second year">Second Year</option>
-                      <option value="after second year">After Second Year</option>
+                      <option value="after second year">
+                        After Second Year
+                      </option>
                       <option value="adult">Adult</option>
                       <option value="unknown">Unknown</option>
                     </select>
@@ -281,7 +303,9 @@ export default function PhotoUpload({
                     </label>
                     <select
                       value={metadata.sex}
-                      onChange={(e) => handleMetadataChange('sex', e.target.value)}
+                      onChange={(e) =>
+                        handleMetadataChange("sex", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
@@ -296,7 +320,9 @@ export default function PhotoUpload({
 
               {/* Optional Metadata Section */}
               <div className="border-l-4 border-gray-300 pl-4">
-                <h3 className="font-semibold text-gray-900 mb-4">Optional Information</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">
+                  Optional Information
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -304,8 +330,10 @@ export default function PhotoUpload({
                     </label>
                     <input
                       type="text"
-                      value={metadata.firstPhotoNumber || ''}
-                      onChange={(e) => handleMetadataChange('firstPhotoNumber', e.target.value)}
+                      value={metadata.firstPhotoNumber || ""}
+                      onChange={(e) =>
+                        handleMetadataChange("firstPhotoNumber", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 001"
@@ -318,8 +346,10 @@ export default function PhotoUpload({
                     </label>
                     <input
                       type="text"
-                      value={metadata.lastPhotoNumber || ''}
-                      onChange={(e) => handleMetadataChange('lastPhotoNumber', e.target.value)}
+                      value={metadata.lastPhotoNumber || ""}
+                      onChange={(e) =>
+                        handleMetadataChange("lastPhotoNumber", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 005"
@@ -332,8 +362,10 @@ export default function PhotoUpload({
                     </label>
                     <input
                       type="text"
-                      value={metadata.wrpPlumageCode || ''}
-                      onChange={(e) => handleMetadataChange('wrpPlumageCode', e.target.value)}
+                      value={metadata.wrpPlumageCode || ""}
+                      onChange={(e) =>
+                        handleMetadataChange("wrpPlumageCode", e.target.value)
+                      }
                       disabled={isLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., WWAR-M-HY"
@@ -345,8 +377,10 @@ export default function PhotoUpload({
                       Notes
                     </label>
                     <textarea
-                      value={metadata.notes || ''}
-                      onChange={(e) => handleMetadataChange('notes', e.target.value)}
+                      value={metadata.notes || ""}
+                      onChange={(e) =>
+                        handleMetadataChange("notes", e.target.value)
+                      }
                       disabled={isLoading}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -373,10 +407,11 @@ export default function PhotoUpload({
                 >
                   {isLoading ? (
                     <>
-                      <span className="inline-block animate-spin">⟳</span> Uploading...
+                      <span className="inline-block animate-spin">⟳</span>{" "}
+                      Uploading...
                     </>
                   ) : (
-                    '✓ Upload Photo'
+                    "✓ Upload Photo"
                   )}
                 </button>
               </div>

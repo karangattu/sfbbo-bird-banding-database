@@ -1,14 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { ServiceAccountDriveService, PhotoMetadata } from '@/services/serviceAccountDriveService';
-import { tursoService } from '@/services/tursoService';
-import busboy from 'busboy';
+import { NextRequest, NextResponse } from "next/server";
+import {
+  ServiceAccountDriveService,
+  PhotoMetadata,
+} from "@/services/serviceAccountDriveService";
+import { tursoService } from "@/services/tursoService";
+import busboy from "busboy";
 
 // Parse multipart form data
 async function parseFormData(req: NextRequest) {
-  const contentType = req.headers.get('content-type');
+  const contentType = req.headers.get("content-type");
 
-  if (!contentType?.includes('multipart/form-data')) {
-    throw new Error('Invalid content type');
+  if (!contentType?.includes("multipart/form-data")) {
+    throw new Error("Invalid content type");
   }
 
   const formData = await req.formData();
@@ -23,24 +26,28 @@ export async function POST(req: NextRequest) {
     const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
     if (!serviceAccountKey) {
       return NextResponse.json(
-        { error: 'Service account key not configured' },
+        { error: "Service account key not configured" },
         { status: 500 }
       );
     }
 
-    const keyfileContent = JSON.parse(Buffer.from(serviceAccountKey, 'base64').toString());
+    const keyfileContent = JSON.parse(
+      Buffer.from(serviceAccountKey, "base64").toString()
+    );
 
     // Initialize service
     const driveService = new ServiceAccountDriveService(keyfileContent);
 
     // Get file and metadata from form data
-    const file = formData.get('file') as File;
-    const folderId = formData.get('folderId') as string;
-    const metadata = JSON.parse(formData.get('metadata') as string) as PhotoMetadata;
+    const file = formData.get("file") as File;
+    const folderId = formData.get("folderId") as string;
+    const metadata = JSON.parse(
+      formData.get("metadata") as string
+    ) as PhotoMetadata;
 
     if (!file || !folderId) {
       return NextResponse.json(
-        { error: 'Missing file or folderId' },
+        { error: "Missing file or folderId" },
         { status: 400 }
       );
     }
@@ -71,9 +78,9 @@ export async function POST(req: NextRequest) {
         wrpPlumageCode: metadata.wrpPlumageCode,
         notes: metadata.notes,
       });
-      console.log('Tag saved to Turso with ID:', tagId);
+      console.log("Tag saved to Turso with ID:", tagId);
     } catch (tagError) {
-      console.error('Failed to save tag to Turso:', tagError);
+      console.error("Failed to save tag to Turso:", tagError);
     }
 
     return NextResponse.json({
@@ -83,9 +90,9 @@ export async function POST(req: NextRequest) {
       metadata: result.metadata,
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error("Upload error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Upload failed' },
+      { error: error instanceof Error ? error.message : "Upload failed" },
       { status: 500 }
     );
   }

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 export interface GoogleDriveFile {
   id: string;
@@ -15,30 +15,37 @@ export class GoogleDriveService {
     this.accessToken = accessToken;
   }
 
-  async listFiles(folderId: string, pageToken?: string): Promise<{
+  async listFiles(
+    folderId: string,
+    pageToken?: string
+  ): Promise<{
     files: GoogleDriveFile[];
     nextPageToken?: string;
   }> {
     try {
-      const response = await axios.get('https://www.googleapis.com/drive/v3/files', {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-        params: {
-          q: `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`,
-          spaces: 'drive',
-          fields: 'files(id, name, mimeType, thumbnailLink, webViewLink), nextPageToken',
-          pageSize: 20,
-          pageToken,
-        },
-      });
+      const response = await axios.get(
+        "https://www.googleapis.com/drive/v3/files",
+        {
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+          params: {
+            q: `'${folderId}' in parents and (mimeType contains 'image/' or mimeType = 'application/vnd.google-apps.folder') and trashed = false`,
+            spaces: "drive",
+            fields:
+              "files(id, name, mimeType, thumbnailLink, webViewLink), nextPageToken",
+            pageSize: 20,
+            pageToken,
+          },
+        }
+      );
 
       return {
         files: response.data.files || [],
         nextPageToken: response.data.nextPageToken,
       };
     } catch (error) {
-      console.error('Error listing files from Google Drive:', error);
+      console.error("Error listing files from Google Drive:", error);
       throw error;
     }
   }
@@ -52,14 +59,14 @@ export class GoogleDriveService {
             Authorization: `Bearer ${this.accessToken}`,
           },
           params: {
-            fields: 'id, name, mimeType, thumbnailLink, webViewLink',
+            fields: "id, name, mimeType, thumbnailLink, webViewLink",
           },
         }
       );
 
       return response.data;
     } catch (error) {
-      console.error('Error getting file metadata:', error);
+      console.error("Error getting file metadata:", error);
       throw error;
     }
   }
@@ -72,13 +79,13 @@ export class GoogleDriveService {
           headers: {
             Authorization: `Bearer ${this.accessToken}`,
           },
-          responseType: 'arraybuffer',
+          responseType: "arraybuffer",
         }
       );
 
       return response.data;
     } catch (error) {
-      console.error('Error downloading file:', error);
+      console.error("Error downloading file:", error);
       throw error;
     }
   }

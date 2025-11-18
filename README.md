@@ -4,7 +4,9 @@ A web application for tagging and organizing bird banding photos stored in Googl
 
 ## Quick Start
 
+```sh
 npm install
+```
 
 ### Prerequisites
 
@@ -15,8 +17,22 @@ npm install
 
 ### Run
 
+```sh
 npm run dev
+```
+
+### Build
+
+```sh
+npm run build
+```
 
 ### Installation
 
 Open http://localhost:3000
+
+### Deploy
+
+```sh
+vercel --prod
+```

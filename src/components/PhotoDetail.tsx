@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Photo } from '@/types';
+import React from "react";
+import { Photo } from "@/types";
 
 interface PhotoDetailProps {
   photo: Photo | null;
@@ -29,7 +29,10 @@ export const PhotoDetail: React.FC<PhotoDetailProps> = ({
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Image Display */}
-      <div className="flex-shrink-0 bg-gray-900 flex items-center justify-center" style={{ height: '400px' }}>
+      <div
+        className="flex-shrink-0 bg-gray-900 flex items-center justify-center"
+        style={{ height: "400px" }}
+      >
         {photo.imageUrl ? (
           <img
             src={photo.imageUrl}
@@ -45,7 +48,9 @@ export const PhotoDetail: React.FC<PhotoDetailProps> = ({
       <div className="flex-1 overflow-y-auto p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{photo.name}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              {photo.name}
+            </h2>
             <a
               href={photo.webViewLink}
               target="_blank"
@@ -87,27 +92,49 @@ export const PhotoDetail: React.FC<PhotoDetailProps> = ({
                 >
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div>
-                      <p className="text-xs text-gray-500 font-semibold">RECORD ID</p>
-                      <p className="text-sm font-medium text-gray-900">{tag.recordId}</p>
+                      <p className="text-xs text-gray-500 font-semibold">
+                        RECORD ID
+                      </p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {tag.recordId}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-semibold">BAND NUMBER</p>
-                      <p className="text-sm font-medium text-gray-900">{tag.bandNumber}</p>
+                      <p className="text-xs text-gray-500 font-semibold">
+                        BAND NUMBER
+                      </p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {tag.bandNumber}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-semibold">SPECIES</p>
-                      <p className="text-sm font-medium text-gray-900">{tag.species}</p>
+                      <p className="text-xs text-gray-500 font-semibold">
+                        SPECIES
+                      </p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {tag.species}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-semibold">DATE</p>
-                      <p className="text-sm font-medium text-gray-900">{tag.date || '—'}</p>
+                      <p className="text-xs text-gray-500 font-semibold">
+                        DATE
+                      </p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {tag.date || "—"}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-semibold">LOCATION</p>
-                      <p className="text-sm font-medium text-gray-900">{tag.location || '—'}</p>
+                      <p className="text-xs text-gray-500 font-semibold">
+                        LOCATION
+                      </p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {tag.location || "—"}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-semibold">AGE / SEX</p>
+                      <p className="text-xs text-gray-500 font-semibold">
+                        AGE / SEX
+                      </p>
                       <p className="text-sm font-medium text-gray-900">
                         {tag.age} / {tag.sex}
                       </p>
@@ -116,14 +143,16 @@ export const PhotoDetail: React.FC<PhotoDetailProps> = ({
 
                   {tag.firstPhotoNumber && (
                     <div className="text-sm text-gray-600 mb-2">
-                      <span className="font-semibold">Photobox:</span> {tag.firstPhotoNumber}
+                      <span className="font-semibold">Photobox:</span>{" "}
+                      {tag.firstPhotoNumber}
                       {tag.lastPhotoNumber && ` - ${tag.lastPhotoNumber}`}
                     </div>
                   )}
 
                   {tag.wrpPlumageCode && (
                     <div className="text-sm text-gray-600 mb-2">
-                      <span className="font-semibold">WRP/Plumage Code:</span> {tag.wrpPlumageCode}
+                      <span className="font-semibold">WRP/Plumage Code:</span>{" "}
+                      {tag.wrpPlumageCode}
                     </div>
                   )}
 

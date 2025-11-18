@@ -1,4 +1,4 @@
-import { PhotoTag } from '@/types';
+import { PhotoTag } from "@/types";
 
 // Types for Turso responses
 interface TursoResponse {
@@ -15,40 +15,43 @@ export class TursoService {
   private isConfigured: boolean;
 
   constructor() {
-    let connectionUrl = process.env.TURSO_CONNECTION_URL || '';
+    let connectionUrl = process.env.TURSO_CONNECTION_URL || "";
 
-    if (connectionUrl.startsWith('libsql://')) {
-      connectionUrl = connectionUrl.replace('libsql://', 'https://');
+    if (connectionUrl.startsWith("libsql://")) {
+      connectionUrl = connectionUrl.replace("libsql://", "https://");
     }
 
     this.connectionUrl = connectionUrl;
-    this.authToken = process.env.TURSO_AUTH_TOKEN || '';
+    this.authToken = process.env.TURSO_AUTH_TOKEN || "";
 
     this.isConfigured = !!(this.connectionUrl && this.authToken);
 
     if (!this.isConfigured) {
       console.warn(
-        'Turso database not configured. Add TURSO_CONNECTION_URL and TURSO_AUTH_TOKEN to .env.local. Tags will work in-memory only.'
+        "Turso database not configured. Add TURSO_CONNECTION_URL and TURSO_AUTH_TOKEN to .env.local. Tags will work in-memory only."
       );
     } else {
-      console.log('Turso configured with URL:', this.connectionUrl.substring(0, 50) + '...');
+      console.log(
+        "Turso configured with URL:",
+        this.connectionUrl.substring(0, 50) + "..."
+      );
     }
   }
 
   private async executeQuery(query: string, params?: any[]): Promise<any[]> {
     if (!this.isConfigured) {
-      console.warn('Turso not configured. Returning empty results.');
+      console.warn("Turso not configured. Returning empty results.");
       return [];
     }
 
     try {
-      console.log('Executing Turso query:', { query, params });
+      console.log("Executing Turso query:", { query, params });
 
       const response = await fetch(`${this.connectionUrl}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${this.authToken}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.authToken}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           statements: [
@@ -62,12 +65,14 @@ export class TursoService {
 
       if (!response.ok) {
         const errorData = await response.text();
-        console.error('Turso HTTP error response:', errorData);
-        throw new Error(`Turso query failed: ${response.statusText} - ${errorData}`);
+        console.error("Turso HTTP error response:", errorData);
+        throw new Error(
+          `Turso query failed: ${response.statusText} - ${errorData}`
+        );
       }
 
       const data: any = await response.json();
-      console.log('Turso response:', JSON.stringify(data, null, 2));
+      console.log("Turso response:", JSON.stringify(data, null, 2));
 
       if (data.error) {
         throw new Error(data.error);
@@ -77,7 +82,7 @@ export class TursoService {
         const result = data[0].results;
 
         if (result.error) {
-          throw new Error(result.error.message || 'Query execution failed');
+          throw new Error(result.error.message || "Query execution failed");
         }
 
         const columns = result.columns || [];
@@ -91,17 +96,17 @@ export class TursoService {
           return rowObj;
         });
 
-        console.log('Parsed rows:', parsedRows);
+        console.log("Parsed rows:", parsedRows);
         return parsedRows;
       }
 
       return [];
     } catch (error) {
-      console.error('Turso query error:', {
+      console.error("Turso query error:", {
         error,
         query,
         params,
-        connectionUrl: this.connectionUrl.substring(0, 50) + '...',
+        connectionUrl: this.connectionUrl.substring(0, 50) + "...",
       });
       throw error;
     }
@@ -112,8 +117,8 @@ export class TursoService {
    */
   async getPhotoTags(photoId: string): Promise<PhotoTag[]> {
     try {
-      console.log('=== getPhotoTags START ===');
-      console.log('Requested photoId:', photoId);
+      console.log("=== getPhotoTags START ===");
+      console.log("Requested photoId:", photoId);
 
       const query = `
         SELECT * FROM photo_tags
@@ -123,17 +128,17 @@ export class TursoService {
       const rows = await this.executeQuery(query, [photoId]);
 
       console.log(`Found ${rows.length} rows for photoId ${photoId}`);
-      console.log('Raw rows:', JSON.stringify(rows, null, 2));
+      console.log("Raw rows:", JSON.stringify(rows, null, 2));
 
       const tags = rows.map((row: any) => ({
         id: row.id,
-        recordId: row.recordId || '',
-        bandNumber: row.bandNumber || '',
-        date: row.date || '',
-        location: row.location || '',
-        species: row.species || '',
-        age: row.age || '',
-        sex: row.sex || '',
+        recordId: row.recordId || "",
+        bandNumber: row.bandNumber || "",
+        date: row.date || "",
+        location: row.location || "",
+        species: row.species || "",
+        age: row.age || "",
+        sex: row.sex || "",
         firstPhotoNumber: row.firstPhotoNumber,
         lastPhotoNumber: row.lastPhotoNumber,
         wrpPlumageCode: row.wrpPlumageCode,
@@ -141,11 +146,11 @@ export class TursoService {
         createdAt: row.createdAt,
       }));
 
-      console.log('Mapped tags:', JSON.stringify(tags, null, 2));
-      console.log('=== getPhotoTags END ===');
+      console.log("Mapped tags:", JSON.stringify(tags, null, 2));
+      console.log("=== getPhotoTags END ===");
       return tags;
     } catch (error) {
-      console.error('Error fetching photo tags:', error);
+      console.error("Error fetching photo tags:", error);
       return [];
     }
   }
@@ -155,12 +160,12 @@ export class TursoService {
    */
   async addTag(
     photoId: string,
-    tag: Omit<PhotoTag, 'id' | 'createdAt'>
+    tag: Omit<PhotoTag, "id" | "createdAt">
   ): Promise<string> {
     try {
-      console.log('=== addTag START ===');
-      console.log('Adding tag for photoId:', photoId);
-      console.log('Tag data:', tag);
+      console.log("=== addTag START ===");
+      console.log("Adding tag for photoId:", photoId);
+      console.log("Tag data:", tag);
 
       const tagId = `tag_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const now = new Date().toISOString();
@@ -190,14 +195,14 @@ export class TursoService {
         now,
       ];
 
-      console.log('Insert params:', params);
+      console.log("Insert params:", params);
 
       await this.executeQuery(query, params);
-      console.log('Tag inserted with ID:', tagId);
-      console.log('=== addTag END ===');
+      console.log("Tag inserted with ID:", tagId);
+      console.log("=== addTag END ===");
       return tagId;
     } catch (error) {
-      console.error('Error adding tag:', error);
+      console.error("Error adding tag:", error);
       throw error;
     }
   }
@@ -214,65 +219,65 @@ export class TursoService {
       const values: any[] = [];
 
       if (updates.recordId !== undefined) {
-        updateFields.push('recordId = ?');
+        updateFields.push("recordId = ?");
         values.push(updates.recordId);
       }
       if (updates.bandNumber !== undefined) {
-        updateFields.push('bandNumber = ?');
+        updateFields.push("bandNumber = ?");
         values.push(updates.bandNumber);
       }
       if (updates.date !== undefined) {
-        updateFields.push('date = ?');
+        updateFields.push("date = ?");
         values.push(updates.date);
       }
       if (updates.location !== undefined) {
-        updateFields.push('location = ?');
+        updateFields.push("location = ?");
         values.push(updates.location);
       }
       if (updates.species !== undefined) {
-        updateFields.push('species = ?');
+        updateFields.push("species = ?");
         values.push(updates.species);
       }
       if (updates.age !== undefined) {
-        updateFields.push('age = ?');
+        updateFields.push("age = ?");
         values.push(updates.age);
       }
       if (updates.sex !== undefined) {
-        updateFields.push('sex = ?');
+        updateFields.push("sex = ?");
         values.push(updates.sex);
       }
       if (updates.firstPhotoNumber !== undefined) {
-        updateFields.push('firstPhotoNumber = ?');
+        updateFields.push("firstPhotoNumber = ?");
         values.push(updates.firstPhotoNumber);
       }
       if (updates.lastPhotoNumber !== undefined) {
-        updateFields.push('lastPhotoNumber = ?');
+        updateFields.push("lastPhotoNumber = ?");
         values.push(updates.lastPhotoNumber);
       }
       if (updates.wrpPlumageCode !== undefined) {
-        updateFields.push('wrpPlumageCode = ?');
+        updateFields.push("wrpPlumageCode = ?");
         values.push(updates.wrpPlumageCode);
       }
       if (updates.notes !== undefined) {
-        updateFields.push('notes = ?');
+        updateFields.push("notes = ?");
         values.push(updates.notes);
       }
 
       if (updateFields.length === 0) return; // No updates
 
-      updateFields.push('updatedAt = ?');
+      updateFields.push("updatedAt = ?");
       values.push(now);
       values.push(tagId);
 
       const query = `
         UPDATE photo_tags 
-        SET ${updateFields.join(', ')}
+        SET ${updateFields.join(", ")}
         WHERE id = ?
       `;
 
       await this.executeQuery(query, values);
     } catch (error) {
-      console.error('Error updating tag:', error);
+      console.error("Error updating tag:", error);
       throw error;
     }
   }
@@ -282,10 +287,10 @@ export class TursoService {
    */
   async deleteTag(tagId: string): Promise<void> {
     try {
-      const query = 'DELETE FROM photo_tags WHERE id = ?';
+      const query = "DELETE FROM photo_tags WHERE id = ?";
       await this.executeQuery(query, [tagId]);
     } catch (error) {
-      console.error('Error deleting tag:', error);
+      console.error("Error deleting tag:", error);
       throw error;
     }
   }
@@ -298,41 +303,67 @@ export class TursoService {
     bandNumber?: string;
     location?: string;
     recordId?: string;
-  }): Promise<PhotoTag[]> {
+    startDate?: string;
+    endDate?: string;
+    age?: string;
+    sex?: string;
+    notes?: string;
+  }): Promise<(PhotoTag & { photoId: string })[]> {
     try {
-      let query = 'SELECT * FROM photo_tags WHERE 1=1';
+      let query = "SELECT * FROM photo_tags WHERE 1=1";
       const params: any[] = [];
 
       if (criteria.species) {
-        query += ' AND species LIKE ?';
+        query += " AND species LIKE ?";
         params.push(`%${criteria.species}%`);
       }
       if (criteria.bandNumber) {
-        query += ' AND bandNumber LIKE ?';
+        query += " AND bandNumber LIKE ?";
         params.push(`%${criteria.bandNumber}%`);
       }
       if (criteria.location) {
-        query += ' AND location LIKE ?';
+        query += " AND location LIKE ?";
         params.push(`%${criteria.location}%`);
       }
       if (criteria.recordId) {
-        query += ' AND recordId LIKE ?';
+        query += " AND recordId LIKE ?";
         params.push(`%${criteria.recordId}%`);
       }
+      if (criteria.startDate) {
+        query += " AND date >= ?";
+        params.push(criteria.startDate);
+      }
+      if (criteria.endDate) {
+        query += " AND date <= ?";
+        params.push(criteria.endDate);
+      }
+      if (criteria.age) {
+        query += " AND age LIKE ?";
+        params.push(`%${criteria.age}%`);
+      }
+      if (criteria.sex) {
+        query += " AND sex LIKE ?";
+        params.push(`%${criteria.sex}%`);
+      }
+      if (criteria.notes) {
+        query += " AND notes LIKE ?";
+        params.push(`%${criteria.notes}%`);
+      }
 
-      query += ' ORDER BY createdAt DESC';
+      query += " ORDER BY createdAt DESC";
 
       const rows = await this.executeQuery(query, params);
 
       return rows.map((row: any) => ({
         id: row.id,
-        recordId: row.recordId || '',
-        bandNumber: row.bandNumber || '',
-        date: row.date || '',
-        location: row.location || '',
-        species: row.species || '',
-        age: row.age || '',
-        sex: row.sex || '',
+        photoId: row.photoId,
+        recordId: row.recordId || "",
+        bandNumber: row.bandNumber || "",
+        date: row.date || "",
+        location: row.location || "",
+        species: row.species || "",
+        age: row.age || "",
+        sex: row.sex || "",
         firstPhotoNumber: row.firstPhotoNumber,
         lastPhotoNumber: row.lastPhotoNumber,
         wrpPlumageCode: row.wrpPlumageCode,
@@ -340,7 +371,7 @@ export class TursoService {
         createdAt: row.createdAt,
       }));
     } catch (error) {
-      console.error('Error searching tags:', error);
+      console.error("Error searching tags:", error);
       return [];
     }
   }
@@ -350,12 +381,12 @@ export class TursoService {
    */
   async deletePhotoTags(photoId: string): Promise<void> {
     try {
-      console.log('Deleting all tags for photoId:', photoId);
+      console.log("Deleting all tags for photoId:", photoId);
       const query = `DELETE FROM photo_tags WHERE photoId = ?`;
       await this.executeQuery(query, [photoId]);
-      console.log('Successfully deleted all tags for photoId:', photoId);
+      console.log("Successfully deleted all tags for photoId:", photoId);
     } catch (error) {
-      console.error('Error deleting photo tags:', error);
+      console.error("Error deleting photo tags:", error);
       throw error;
     }
   }

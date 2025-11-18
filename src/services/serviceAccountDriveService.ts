@@ -1,6 +1,6 @@
-import { google } from 'googleapis';
-import { JWT } from 'google-auth-library';
-import { Readable } from 'stream';
+import { google } from "googleapis";
+import { JWT } from "google-auth-library";
+import { Readable } from "stream";
 
 export interface ServiceAccountConfig {
   type: string;
@@ -37,11 +37,11 @@ export class ServiceAccountDriveService {
     this.auth = new JWT({
       email: keyfileContent.client_email,
       key: keyfileContent.private_key,
-      scopes: ['https://www.googleapis.com/auth/drive'],
+      scopes: ["https://www.googleapis.com/auth/drive"],
     });
 
     this.drive = google.drive({
-      version: 'v3',
+      version: "v3",
       auth: this.auth as any,
     });
   }
@@ -83,10 +83,10 @@ export class ServiceAccountDriveService {
       const response = await this.drive.files.create({
         requestBody: fileMetadata,
         media: {
-          mimeType: 'image/jpeg',
+          mimeType: "image/jpeg",
           body: stream,
         },
-        fields: 'id, webViewLink, name',
+        fields: "id, webViewLink, name",
       });
 
       return {
@@ -95,7 +95,7 @@ export class ServiceAccountDriveService {
         metadata,
       };
     } catch (error) {
-      console.error('Error uploading photo:', error);
+      console.error("Error uploading photo:", error);
       throw error;
     }
   }
@@ -105,7 +105,10 @@ export class ServiceAccountDriveService {
    * @param fileId - Google Drive file ID
    * @param metadata - Updated metadata
    */
-  async updatePhotoMetadata(fileId: string, metadata: PhotoMetadata): Promise<void> {
+  async updatePhotoMetadata(
+    fileId: string,
+    metadata: PhotoMetadata
+  ): Promise<void> {
     try {
       await this.drive.files.update({
         fileId,
@@ -121,10 +124,10 @@ export class ServiceAccountDriveService {
             sex: metadata.sex,
           },
         },
-        fields: 'id',
+        fields: "id",
       });
     } catch (error) {
-      console.error('Error updating photo metadata:', error);
+      console.error("Error updating photo metadata:", error);
       throw error;
     }
   }
@@ -144,8 +147,9 @@ export class ServiceAccountDriveService {
 
       const response = await this.drive.files.list({
         q,
-        spaces: 'drive',
-        fields: 'files(id, name, description, properties, webViewLink, createdTime, modifiedTime)',
+        spaces: "drive",
+        fields:
+          "files(id, name, description, properties, webViewLink, createdTime, modifiedTime)",
         pageSize: 50,
       });
 
@@ -155,7 +159,7 @@ export class ServiceAccountDriveService {
         metadata: file.description ? JSON.parse(file.description) : {},
       }));
     } catch (error) {
-      console.error('Error searching photos:', error);
+      console.error("Error searching photos:", error);
       throw error;
     }
   }
@@ -168,60 +172,48 @@ export class ServiceAccountDriveService {
     try {
       const response = await this.drive.files.get({
         fileId,
-        fields: 'id, name, description, properties, webViewLink, createdTime, modifiedTime',
+        fields:
+          "id, name, description, properties, webViewLink, createdTime, modifiedTime",
       });
 
       return {
         ...response.data,
-        metadata: response.data.description ? JSON.parse(response.data.description) : {},
+        metadata: response.data.description
+          ? JSON.parse(response.data.description)
+          : {},
       };
     } catch (error) {
-      console.error('Error getting file metadata:', error);
+      console.error("Error getting file metadata:", error);
       throw error;
     }
   }
 
   /**
-   * List all photos in a folder and nested subfolders with their metadata
+   * List all photos and folders in a folder with their metadata
    * @param folderId - Google Drive folder ID
    */
   async listPhotosWithMetadata(folderId: string): Promise<any[]> {
     try {
-      const allPhotos: any[] = [];
+      // Get photos and folders in current folder
+      const response = await this.drive.files.list({
+        q: `'${folderId}' in parents and trashed = false`,
+        spaces: "drive",
+        fields:
+          "files(id, name, mimeType, description, properties, webViewLink, thumbnailLink, createdTime, modifiedTime)",
+        pageSize: 100,
+      });
 
-      // Recursive function to search folder and subfolders
-      const searchFolderRecursive = async (currentFolderId: string) => {
-        // Get photos in current folder
-        const response = await this.drive.files.list({
-          q: `'${currentFolderId}' in parents and trashed = false`,
-          spaces: 'drive',
-          fields: 'files(id, name, mimeType, description, properties, webViewLink, thumbnailLink, createdTime, modifiedTime)',
-          pageSize: 100,
-        });
-
-        if (response.data.files) {
-          for (const file of response.data.files) {
-            // Check if it's an image
-            if (file.mimeType && file.mimeType.includes('image/')) {
-              allPhotos.push({
-                ...file,
-                imageUrl: `/api/photos/thumbnail/${file.id}`,
-                metadata: file.description ? JSON.parse(file.description) : {},
-              });
-            }
-            // Recursively search subfolders
-            else if (file.mimeType === 'application/vnd.google-apps.folder') {
-              await searchFolderRecursive(file.id);
-            }
-          }
-        }
-      };
-
-      // Start recursive search
-      await searchFolderRecursive(folderId);
-      return allPhotos;
+      const items = response.data.files || [];
+      return items.map((file: any) => {
+        const isPhoto = file.mimeType && file.mimeType.includes("image/");
+        return {
+          ...file,
+          imageUrl: isPhoto ? `/api/photos/thumbnail/${file.id}` : null,
+          metadata: file.description ? JSON.parse(file.description) : {},
+        };
+      });
     } catch (error) {
-      console.error('Error listing photos with metadata:', error);
+      console.error("Error listing photos with metadata:", error);
       throw error;
     }
   }
@@ -236,7 +228,7 @@ export class ServiceAccountDriveService {
         fileId,
       });
     } catch (error) {
-      console.error('Error deleting photo:', error);
+      console.error("Error deleting photo:", error);
       throw error;
     }
   }

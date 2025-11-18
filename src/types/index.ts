@@ -18,7 +18,8 @@ export interface Photo {
   id: string;
   googleDriveId: string;
   name: string;
-  imageUrl: string;              // Direct Google Drive thumbnail URL
+  mimeType: string;
+  imageUrl: string; // Direct Google Drive thumbnail URL
   webViewLink: string;
   tags: PhotoTag[];
   createdAt: string;
@@ -27,7 +28,8 @@ export interface Photo {
 export interface FilterCriteria {
   recordId?: string;
   bandNumber?: string;
-  date?: string;
+  startDate?: string;
+  endDate?: string;
   location?: string;
   species?: string;
   age?: string;

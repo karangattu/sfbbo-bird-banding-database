@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { FilterCriteria } from '@/types';
+import React from "react";
+import { FilterCriteria } from "@/types";
 
 interface SearchFilterProps {
   filters: FilterCriteria;
@@ -48,7 +48,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           <input
             type="text"
             name="recordId"
-            value={filters.recordId || ''}
+            value={filters.recordId || ""}
             onChange={handleChange}
             placeholder="e.g., BIG-001"
             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -62,7 +62,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           <input
             type="text"
             name="bandNumber"
-            value={filters.bandNumber || ''}
+            value={filters.bandNumber || ""}
             onChange={handleChange}
             placeholder="e.g., 12345"
             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -76,7 +76,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           <input
             type="text"
             name="species"
-            value={filters.species || ''}
+            value={filters.species || ""}
             onChange={handleChange}
             placeholder="e.g., Wilson's Warbler"
             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -90,7 +90,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           <input
             type="text"
             name="location"
-            value={filters.location || ''}
+            value={filters.location || ""}
             onChange={handleChange}
             placeholder="e.g., CCFS"
             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -99,12 +99,25 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
 
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">
-            Date
+            Start Date
           </label>
           <input
             type="date"
-            name="date"
-            value={filters.date || ''}
+            name="startDate"
+            value={filters.startDate || ""}
+            onChange={handleChange}
+            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
+            End Date
+          </label>
+          <input
+            type="date"
+            name="endDate"
+            value={filters.endDate || ""}
             onChange={handleChange}
             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -116,7 +129,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           </label>
           <select
             name="age"
-            value={filters.age || ''}
+            value={filters.age || ""}
             onChange={handleChange}
             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -135,7 +148,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           </label>
           <select
             name="sex"
-            value={filters.sex || ''}
+            value={filters.sex || ""}
             onChange={handleChange}
             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -153,7 +166,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
           <input
             type="text"
             name="notes"
-            value={filters.notes || ''}
+            value={filters.notes || ""}
             onChange={handleChange}
             placeholder="Search notes..."
             className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -163,7 +176,8 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
 
       {hasActiveFilters && (
         <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
-          Filters applied. {Object.values(filters).filter((v) => v).length} active filter(s).
+          Filters applied. {Object.values(filters).filter((v) => v).length}{" "}
+          active filter(s).
         </div>
       )}
     </div>
